@@ -1,0 +1,7 @@
+{
+  "name": "ShopPreorder",
+  "version_number": "1.1.0",
+  "website_url": "",
+  "description": "Preorder items that aren't in the shop from an in-game catalog. Pay now (+50%), get it free next shop. Watch out for a confused shopkeeper.",
+  "dependencies": ["BepInEx-BepInExPack-5.4.2305", "REPOModding-MenuLib-2.6.3"]
+}

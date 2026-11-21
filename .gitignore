@@ -1,0 +1,12 @@
+# Build output
+bin/
+obj/
+*.zip
+
+# The built DLL is copied into package/ when packaging - don't commit it
+package/*.dll
+
+# Editor files
+.vs/
+.vscode/
+*.user
