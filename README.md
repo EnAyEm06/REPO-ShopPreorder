@@ -8,6 +8,7 @@ Didn't see the item you wanted in the shop? **Preorder it.** Pay now, and it's g
 - **A shopkeeper with personality:** 1 in 3 chance of a 20–50% discount, and a 10% chance they get confused and stock the *wrong* item (still free).
 - **Multiplayer:** the host decides whether only the host or everyone can preorder. The team gets one preorder per round, paid from the team's money.
 - Chat commands (`/preorder`, `/po`) work too, so the mod still works without MenuLib.
+- **Host settings from chat:** `/preorder settings`, `/preorder everyone on|off`, `/preorder markup 50`, `/preorder discount 33` or `20-50`, `/preorder confusion 10`.
 
 See [package/README.md](package/README.md) for the full player guide and settings.
 

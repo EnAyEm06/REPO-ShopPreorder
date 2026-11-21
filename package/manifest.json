@@ -1,6 +1,6 @@
 {
   "name": "ShopPreorder",
-  "version_number": "1.1.0",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/EnAyEm06/REPO-ShopPreorder",
   "description": "Preorder items that aren't in the shop from an in-game catalog. Pay now (+50%), get it free next shop. Watch out for a confused shopkeeper.",
   "dependencies": [

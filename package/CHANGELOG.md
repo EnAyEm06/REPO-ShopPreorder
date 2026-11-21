@@ -1,3 +1,8 @@
+## v1.2.0
+
+- **Host settings from chat:** `/preorder settings`, `/preorder everyone on|off`, `/preorder markup 50`, `/preorder discount 33`, `/preorder discount 20-50`, `/preorder confusion 10`.
+- Changes take effect immediately and are saved. Switching "everyone" updates other players' hints and catalog straight away.
+
 ## v1.1.0
 
 - **Preorder Catalog:** press **P** in the shop to browse items by category, with prices. Click and confirm to preorder.

@@ -163,6 +163,11 @@ namespace ShopPreorder
 
         private static void HandleOnHostInner(string args, Requester who)
         {
+            // Host settings work anywhere, not just in the shop.
+            var words = args.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var first = words.Length > 0 ? words[0].ToLowerInvariant() : "";
+            if (SettingCommands.Contains(first)) { HandleSetting(first, words, who); return; }
+
             if (!who.IsHost && !Plugin.AllowEveryone.Value)
             {
                 who.Reply(new[] { "The host has preorders set to host-only." });
@@ -177,13 +182,15 @@ namespace ShopPreorder
             var lower = args.ToLowerInvariant();
             if (lower == "" || lower == "help")
             {
-                who.Reply(new[]
+                var help = new List<string>
                 {
                     "/preorder <item> - pay now, it's in the next shop",
                     "/preorder list - what you can preorder",
                     "/preorder status - this round's preorder",
                     "/preorder cancel - refund this round's preorder",
-                });
+                };
+                if (who.IsHost) help.Add("/preorder settings - see and change settings (host)");
+                who.Reply(help.ToArray());
                 return;
             }
             if (lower == "list") { ShowList(who); return; }
@@ -192,6 +199,100 @@ namespace ShopPreorder
             if (args.StartsWith("#key ")) { PlaceOrderByKey(args.Substring(5), who); return; }
 
             PlaceOrder(args, who);
+        }
+
+        // ---------- host settings from chat ----------
+
+        private static readonly HashSet<string> SettingCommands =
+            new HashSet<string> { "settings", "everyone", "markup", "discount", "confusion" };
+
+        private static string OnOff(bool b) => b ? "ON" : "OFF";
+
+        private static void HandleSetting(string command, string[] words, Requester who)
+        {
+            if (!who.IsHost)
+            {
+                who.Reply(new[] { "Only the host can change preorder settings." });
+                return;
+            }
+
+            string value = words.Length > 1 ? words[1].ToLowerInvariant() : "";
+
+            switch (command)
+            {
+                case "settings":
+                    who.Reply(new[]
+                    {
+                        $"Everyone can preorder: {OnOff(Plugin.AllowEveryone.Value)}  |  Markup: {Plugin.MarkupPercent.Value}%",
+                        $"Discount: {Plugin.DiscountChancePercent.Value}% chance of " +
+                        $"{Plugin.DiscountMinPercent.Value}-{Plugin.DiscountMaxPercent.Value}% off  |  " +
+                        $"Wrong item: {Plugin.ConfusionChancePercent.Value}% chance",
+                        "Change with: /preorder everyone on|off, markup 50, discount 33, discount 20-50, confusion 10",
+                    });
+                    return;
+
+                case "everyone":
+                    bool? on = value == "on" || value == "true" || value == "yes" ? true
+                             : value == "off" || value == "false" || value == "no" ? false
+                             : (bool?)null;
+                    if (on == null)
+                    {
+                        who.Reply(new[] { $"Everyone can preorder: {OnOff(Plugin.AllowEveryone.Value)}. Use: /preorder everyone on (or off)" });
+                        return;
+                    }
+                    Plugin.AllowEveryone.Value = on.Value;   // saves the config and tells other players
+                    var msg = on.Value
+                        ? "The host turned preorders ON for everyone. Press P in the shop!"
+                        : "The host set preorders to host-only.";
+                    who.Reply(new[] { msg });
+                    Net.SendToOthers(new[] { msg }, 0);
+                    return;
+
+                case "markup":
+                    if (TryPercent(value, 0, 300, out int markup, who, "/preorder markup 50"))
+                    {
+                        Plugin.MarkupPercent.Value = markup;
+                        who.Reply(new[] { $"Preorder markup set to {markup}%." });
+                    }
+                    return;
+
+                case "discount":
+                    var dash = value.IndexOf('-');
+                    if (dash > 0)
+                    {
+                        if (TryPercent(value.Substring(0, dash), 0, 100, out int lo, who, "/preorder discount 20-50") &&
+                            TryPercent(value.Substring(dash + 1), 0, 100, out int hi, who, "/preorder discount 20-50"))
+                        {
+                            Plugin.DiscountMinPercent.Value = Mathf.Min(lo, hi);
+                            Plugin.DiscountMaxPercent.Value = Mathf.Max(lo, hi);
+                            DiscountRolls.Clear();
+                            who.Reply(new[] { $"Shopkeeper discounts are now {Mathf.Min(lo, hi)}-{Mathf.Max(lo, hi)}% off." });
+                        }
+                    }
+                    else if (TryPercent(value, 0, 100, out int chance, who, "/preorder discount 33  or  /preorder discount 20-50"))
+                    {
+                        Plugin.DiscountChancePercent.Value = chance;
+                        DiscountRolls.Clear();
+                        who.Reply(new[] { $"Shopkeeper discount chance set to {chance}%." });
+                    }
+                    return;
+
+                case "confusion":
+                    if (TryPercent(value, 0, 100, out int confusion, who, "/preorder confusion 10"))
+                    {
+                        Plugin.ConfusionChancePercent.Value = confusion;
+                        who.Reply(new[] { $"Wrong-item chance set to {confusion}%." });
+                    }
+                    return;
+            }
+        }
+
+        private static bool TryPercent(string text, int min, int max, out int result, Requester who, string example)
+        {
+            if (int.TryParse((text ?? "").Trim().TrimEnd('%'), out result) && result >= min && result <= max)
+                return true;
+            who.Reply(new[] { $"Use a number from {min} to {max}, e.g. {example}" });
+            return false;
         }
 
         internal static string ItemNameForKey(string key) =>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using BepInEx;
@@ -17,7 +17,7 @@ namespace ShopPreorder
     {
         public const string Guid = "shoppreorder.repo";
         public const string Name = "ShopPreorder";
-        public const string Version = "1.1.0";
+        public const string Version = "1.2.0";
         private const string MenuLibGuid = "nickklmao.menulib";
 
         internal static ManualLogSource Log;
